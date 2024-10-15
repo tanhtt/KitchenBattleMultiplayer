@@ -7,24 +7,48 @@ public class KitchenObject : NetworkBehaviour {
 
     [SerializeField] private KitchenObjectSO kitchenObjectSO;
     private IKitchenObjectParent kitchenObjectParent;
+    private FollowTransform followTransform;
 
+    protected virtual void Awake()
+    {
+        followTransform = GetComponent<FollowTransform>();
+    }
 
     public KitchenObjectSO GetKitchenObjectSO() {
         return kitchenObjectSO;
     }
 
     public void SetKitchenObjectParent(IKitchenObjectParent kitchenObjectParent) {
-        if (this.kitchenObjectParent != null) {
+        SetKitchenObjectParentServerRpc(kitchenObjectParent.GetNetworkObject());
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void SetKitchenObjectParentServerRpc(NetworkObjectReference kitchenObjectParentNetworkObjectRef)
+    {
+        SetKitchenObjectParentClientRpc(kitchenObjectParentNetworkObjectRef);
+    }
+
+    [ClientRpc(RequireOwnership = false)]
+    private void SetKitchenObjectParentClientRpc(NetworkObjectReference kitchenObjectParentNetworkObjectRef)
+    {
+        kitchenObjectParentNetworkObjectRef.TryGet(out NetworkObject kitchenObjectParentNetworkObject);
+        IKitchenObjectParent kitchenObjectParent = kitchenObjectParentNetworkObject.GetComponent<IKitchenObjectParent>();
+
+        if (this.kitchenObjectParent != null)
+        {
             this.kitchenObjectParent.ClearKitchenObject();
         }
 
         this.kitchenObjectParent = kitchenObjectParent;
 
-        if (kitchenObjectParent.HasKitchenObject()) {
+        if (kitchenObjectParent.HasKitchenObject())
+        {
             Debug.LogError("IKitchenObjectParent already has a KitchenObject!");
         }
 
         kitchenObjectParent.SetKitchenObject(this);
+
+        followTransform.SetTargetTransform(kitchenObjectParent.GetKitchenObjectFollowTransform());
 
         // Set parent is lots of issue when using netcode
         //transform.parent = kitchenObjectParent.GetKitchenObjectFollowTransform();

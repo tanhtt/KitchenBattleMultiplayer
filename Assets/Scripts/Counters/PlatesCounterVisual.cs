@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
 public class PlatesCounterVisual : MonoBehaviour {
@@ -29,6 +30,18 @@ public class PlatesCounterVisual : MonoBehaviour {
     }
 
     private void PlatesCounter_OnPlateSpawned(object sender, System.EventArgs e) {
+        SpawnPlateServerRpc();
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void SpawnPlateServerRpc()
+    {
+        SpawnPlateClientRpc();
+    }
+
+    [ClientRpc]
+    private void SpawnPlateClientRpc()
+    {
         Transform plateVisualTransform = Instantiate(plateVisualPrefab, counterTopPoint);
 
         float plateOffsetY = .1f;
@@ -36,5 +49,4 @@ public class PlatesCounterVisual : MonoBehaviour {
 
         plateVisualGameObjectList.Add(plateVisualTransform.gameObject);
     }
-
 }
