@@ -36,14 +36,6 @@ public class Player : NetworkBehaviour, IKitchenObjectParent {
     private BaseCounter selectedCounter;
     private KitchenObject kitchenObject;
 
-
-    private void Awake() {
-        //if (Instance != null) {
-        //    Debug.LogError("There is more than one Player instance");
-        //}
-        //Instance = this;
-    }
-
     public override void OnNetworkSpawn()
     {
         if(!IsOwner) return;
